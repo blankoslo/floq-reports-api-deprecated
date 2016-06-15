@@ -18,3 +18,15 @@ before_install:
 
 script:
   - stack --no-terminal --install-ghc build
+
+before_deploy: bash dist.bash
+deploy:
+  - provider: gcs
+    bucket: floq
+    local_dir: dist
+    upload-dir: reports-api
+    cache_control: "max-age=0"
+    acl: public-read
+    access_key_id: GOOGGRHKTW3J2AGIVJGY
+    secret_access_key:
+      secure: "rDjzLamO1UsJ+KlK9dGskq+Irz8NzqmA0yP8wBxWiPzx4ZUEDqMzCHtD3ydZnRUUjjAZ8Ol4YMyl5j/arGdDs1cX7gIhVCDHpGG4rltQVwIdVfIvbMZMQtIDRi9+AMsFEYU/bU/Hu4KebuW6yXxIGVg9XkKMdbzWbOFaB5PnzC2VuacLOPU6RTXIrjhj8ZkQa2BNuyIKqFQ/Impsy7mG8FyI177Z3Wn03L9ERzrqq6roREdIc5crOIVtmAlhmyXKqrUEQ0245PmhE14e4hHE/9Ww1GfHdQpS8lJoDxDD/JetT1Hbnd4tcZsMyupdt/M2FR3DD9sCKYRaZ2MfNGgAhsEXXe5UQNbxpW3Lnra1xvvDVEaz06hHUboPbssS3DgpyNzL2cQnBqGiyjmi4q67fea1ThEG675WOmDmXNTVcQlXAuHO4DlUyrZWlWPii8C3mzuuuB5w4zl4JejPv0MY5B/3Yzht54KOrJPUuw8WlBGa8dsMT/7Fe6O+YGJFaSf7HTJRd1dSTggJIs68/KRRfku9wWkIVkIkxCUUH6FF0q1HKKRI9Z6qGhEgra4FcasSWlloNJSblkWDvDbNtCf/dzPM2yogvc+/pzf7x/FmpTsHZSm/qdSQYYJRTTOR5qzYenuVmNJM8GsUsAn9ziVONKhxO2EHSTjLMa/pqWokxhA="
