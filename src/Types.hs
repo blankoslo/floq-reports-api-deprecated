@@ -5,13 +5,12 @@
 
 module Types
   (
-    Project,
-    EmployeeHours,
+    Project(..),
+    EmployeeHours(..),
     CSV
   ) where
 
 import Data.Char (ord)
-import Data.Monoid ((<>))
 import GHC.Generics
 import Data.Text (Text)
 import Data.Vector (Vector)
@@ -44,9 +43,9 @@ instance FromRow EmployeeHours
 
 -- An employee row is the employee name prepended to the list of hours
 instance ToRecord EmployeeHours where
-    toRecord (EmployeeHours name minutes) = toField name `V.cons` toRecord hours
+    toRecord (EmployeeHours name mins) = toField name `V.cons` toRecord hours
       where hours :: Vector EuDecimal
-            hours = V.map (EuDecimal . (/60.0) . fromIntegral) minutes
+            hours = V.map (EuDecimal . (/60.0) . fromIntegral) mins
 
 data CSV
 

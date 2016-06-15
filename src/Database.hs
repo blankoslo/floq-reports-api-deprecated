@@ -22,7 +22,7 @@ projects conn = query_ conn [q| select p.id, p.name, c.name
                                 order by billable; |]
 
 employeeHours :: Connection -> Int -> Month -> Year -> IO [EmployeeHours]
-employeeHours conn projectId month year =
+employeeHours conn pid month year =
   let fetchQuery = [q| select e.first_name || ' ' || e.last_name, (
                        select array_agg(coalesce(t.sum,0))
                        from generate_series(date ?, date ?, '1 day'::interval) i
@@ -36,7 +36,7 @@ employeeHours conn projectId month year =
                        from time_entry t, employees e
                        where t.employee = e.id
                        group by t.employee, e.first_name, e.last_name; |]
-  in query conn fetchQuery (startDate, endDate, projectId, startDate, endDate)
+  in query conn fetchQuery (startDate, endDate, pid, startDate, endDate)
   where startDate, endDate :: Text
         startDate = T.pack $ show year <> "-" <> show month <> "-1"
         endDate   = T.pack $ show year <> "-" <> show month <> "-" <> show (lastDay month year)
