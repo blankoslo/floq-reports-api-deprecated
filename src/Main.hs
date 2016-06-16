@@ -8,15 +8,23 @@ import Database.PostgreSQL.Simple (connectPostgreSQL, close)
 import Network.Wai.Handler.Warp (run)
 import Options.Applicative
 
-data Config = Config { dbUrl :: String }
+data Config = Config { port :: Int
+                     , dbUrl :: String }
+
+config :: Parser Config
+config = Config
+  <$> option auto (value 3000 <> long "port" <> metavar "PORT" <> help "Listening port")
+  <*> argument str (metavar "DB_URL" <> help "DB connection string (postgres://...)")
 
 main :: IO ()
 main = do
-  connectionString <- (cs . dbUrl) <$> execParser opts
+  let opts = info (helper <*> config) mempty
+
+  config' <- execParser opts
+  let connectionString = (cs . dbUrl) config'
+  let port' = port config'
+
   bracket
     (connectPostgreSQL connectionString) -- acquire
     close                                -- release
-    (run 8080 . app)                     -- use
-  where
-    parser = Config <$> argument str (metavar "DB_URL")
-    opts = info parser mempty
+    (run port' . app)                    -- use
