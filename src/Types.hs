@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Types
   (
@@ -24,8 +25,8 @@ import Servant.API.ContentTypes
 import Network.HTTP.Media ((//), (/:))
 
 data Project = Project {
-    projectId :: Int
-  , projectName :: Text
+    id :: Int
+  , name :: Text
   , customerName :: Text
   } deriving (Generic, Show)
 
@@ -34,7 +35,7 @@ instance FromRow Project
 instance ToJSON Project
 
 data EmployeeHours = EmployeeHours {
-    employeeName :: Text
+    name :: Text
   , minutes :: Vector Int
   } deriving (Generic, Show)
 
@@ -43,9 +44,9 @@ instance FromRow EmployeeHours
 
 -- An employee row is the employee name prepended to the list of hours
 instance ToRecord EmployeeHours where
-    toRecord (EmployeeHours name mins) = toField name `V.cons` toRecord hours
+    toRecord (EmployeeHours name' minutes') = toField name' `V.cons` toRecord hours
       where hours :: Vector EuDecimal
-            hours = V.map (EuDecimal . (/60.0) . fromIntegral) mins
+            hours = V.map (EuDecimal . (/60.0) . fromIntegral) minutes'
 
 data CSV
 
