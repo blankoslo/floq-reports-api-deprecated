@@ -2,7 +2,6 @@
 {-# Language FlexibleInstances #-}
 {-# Language MultiParamTypeClasses #-}
 {-# Language OverloadedStrings #-}
-{-# Language DuplicateRecordFields #-}
 
 module Types
   (
@@ -28,8 +27,8 @@ import Network.HTTP.Media ((//), (/:))
 
 -- A project
 data Project = Project {
-    id :: Int
-  , name :: Text
+    projectId :: Int
+  , projectName :: Text
   , customerName :: Text
   } deriving (Generic, Show)
 
@@ -42,7 +41,7 @@ instance MimeRender ExcelCSV Project where
 
 -- A list of hours worked for an employee
 data EmployeeHours = EmployeeHours {
-    name :: Text
+    employeeName :: Text
   , minutes :: Vector Int
   } deriving (Generic, Show)
 
