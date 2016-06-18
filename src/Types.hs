@@ -57,7 +57,7 @@ instance ToRecord a => MimeRender CSV [a] where
   mimeRender _ = encodeWith options
     where options = defaultEncodeOptions { encDelimiter = fromIntegral (ord '\t') }
 
--- a data type representing decimals that should use comma as a separator
+-- A data type representing decimals that should use comma as a separator
 newtype EuDecimal = EuDecimal Double
 
 instance ToField EuDecimal where
