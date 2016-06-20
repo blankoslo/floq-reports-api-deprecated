@@ -43,7 +43,7 @@ instance MimeRender ExcelCSV Project where
 -- A list of hours worked for an employee
 data EmployeeHours = EmployeeHours {
     employeeName :: Text
-  , minutes :: Vector Int
+  , employeeHours :: Vector Double
   } deriving (Generic, Show)
 
 instance ToJSON EmployeeHours
@@ -51,9 +51,7 @@ instance FromRow EmployeeHours
 
 -- An employee row is the employee name prepended to the list of hours
 instance ToRecord EmployeeHours where
-    toRecord (EmployeeHours name' minutes') = toField name' `V.cons` toRecord hours'
-      where hours' :: Vector EuDecimal
-            hours' = V.map (EuDecimal . (/60.0) . fromIntegral) minutes'
+    toRecord (EmployeeHours name' hours') = toField name' `V.cons` toRecord hours'
 
 -- A project together with hours worked by employees
 data ProjectHours = ProjectHours {
