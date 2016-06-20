@@ -12,12 +12,11 @@ category:            Web
 build-type:          Simple
 cabal-version:       >=1.10
 
-executable floq-reports
+library
   hs-source-dirs:      src
-  main-is:             Main.hs
   default-language:    Haskell2010
-  ghc-options:         -Wall
-  other-modules:       Database
+  ghc-options:         -Wall -Werror
+  exposed-modules:     Database
                      , Types
                      , Server
   build-depends:       base >= 4.7 && < 5
@@ -26,8 +25,6 @@ executable floq-reports
                      , cassava
                      , http-media
                      , iconv
-                     , interpolatedstring-perl6
-                     , optparse-applicative
                      , postgresql-simple
                      , servant
                      , servant-server
@@ -36,4 +33,15 @@ executable floq-reports
                      , transformers
                      , vector
                      , wai
+
+executable floq-reports
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  ghc-options:         -Wall -Werror
+  build-depends:       base >= 4.7 && < 5
+                     , floq-reports
+                     , optparse-applicative
+                     , postgresql-simple
+                     , string-conversions
                      , warp
