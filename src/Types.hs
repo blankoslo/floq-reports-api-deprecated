@@ -18,6 +18,7 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 
+import Codec.Text.IConv (convert)
 import Data.Aeson.Types (ToJSON)
 import Data.String.Conversions (cs)
 import Data.Csv
@@ -65,7 +66,7 @@ instance ToJSON ProjectHours
 data ExcelCSV
 
 instance Accept ExcelCSV where
-  contentType _ = "text" // "csv" /: ("charset", "utf-8")
+  contentType _ = "text" // "csv" /: ("charset", "utf-16")
 
 instance ToRecord a => MimeRender ExcelCSV [a] where
   mimeRender _ = encodeWith options
@@ -74,20 +75,16 @@ instance ToRecord a => MimeRender ExcelCSV [a] where
                       , encUseCrLf = True
                       }
 
--- An Excel-friendly csv file starts with a byte-order mark to indicate that
--- it's utf-8, then `sep=<tab>` to specify that tab is used as the separator.
--- Line endings are CRLF.
+-- An Excel-friendly csv file starts with a UTF-16LE byte-order mark to indicate
+-- that it's unicode, uses tabs as separators and CRLF line endings.
 instance MimeRender ExcelCSV ProjectHours where
-  mimeRender proxy ph = utf8ByteOrderMark
-                     <> separatorHeader
-                     <> newLine
-                     <> mimeRender proxy (project ph)
-                     <> newLine
-                     <> mimeRender proxy (hours ph)
-    where utf8ByteOrderMark = "\xef\xbb\xbf"
-          separatorHeader = "sep=\t"
-          newLine = "\r\n"
-
+  mimeRender proxy ph = let utf16LEByteOrderMark = "\xff\xfe"
+                            newLine = "\r\n"
+                            body = mimeRender proxy (project ph)
+                                <> newLine
+                                <> mimeRender proxy (hours ph)
+                            encoded = convert "UTF-8" "UTF-16LE" body
+                         in utf16LEByteOrderMark <> encoded
 
 -- A data type representing decimals that should use comma as a separator
 newtype EuDecimal = EuDecimal Double

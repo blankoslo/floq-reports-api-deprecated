@@ -25,6 +25,7 @@ executable floq-reports
                      , bytestring
                      , cassava
                      , http-media
+                     , iconv
                      , interpolatedstring-perl6
                      , optparse-applicative
                      , postgresql-simple
