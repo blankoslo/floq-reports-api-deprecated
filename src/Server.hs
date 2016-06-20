@@ -23,15 +23,15 @@ type ProjectsApi = "projects"
 
 type ProjectHoursApi = "hours"
                     :> Capture "id" Int
-                    :> QueryParam "month" Int
                     :> QueryParam "year" Int
+                    :> QueryParam "month" Int
                     :> Get '[JSON, ExcelCSV] (Headers '[Header "Content-Disposition" String] ProjectHours)
 
 type Api = ProjectsApi
       :<|> ProjectHoursApi
 
 projectHours :: Connection -> Server ProjectHoursApi
-projectHours conn pid (Just mon) (Just year) = do
+projectHours conn pid (Just year) (Just mon) = do
   hours' <- liftIO (DB.projectHours conn pid mon year)
   let contentDispHeader = "attachment; filename=hours-" ++ show year ++ "-" ++ show mon ++ ".csv"
   (return . addHeader contentDispHeader) hours'
