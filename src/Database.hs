@@ -33,7 +33,7 @@ projects :: Connection -> IO [Project]
 projects conn = query_ conn [sql| select p.id, p.name, c.name
                                   from projects p, customers c
                                   where p.customer = c.id
-                                  order by billable; |]
+                                  order by billable desc, id; |]
 
 employeeHours :: Connection -> Int -> Month -> Year -> IO [EmployeeHours]
 employeeHours conn pid month year = do
