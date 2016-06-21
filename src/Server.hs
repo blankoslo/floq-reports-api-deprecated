@@ -15,6 +15,7 @@ import qualified Database as DB
 
 import Control.Monad.IO.Class
 import Network.Wai
+import Network.Wai.Middleware.Cors
 import Servant
 import Database.PostgreSQL.Simple
 
@@ -44,4 +45,4 @@ myApi :: Proxy Api
 myApi = Proxy
 
 app :: Connection -> Application
-app conn = serve myApi (projects conn :<|> projectHours conn)
+app conn = simpleCors $ serve myApi (projects conn :<|> projectHours conn)

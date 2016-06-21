@@ -33,6 +33,7 @@ library
                      , transformers
                      , vector
                      , wai
+                     , wai-cors
 
 executable floq-reports
   hs-source-dirs:      app
