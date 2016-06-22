@@ -73,8 +73,14 @@ projects conn = liftIO (DB.projects conn)
 myApi :: Proxy Api
 myApi = Proxy
 
+corsPolicy :: Request -> Maybe CorsResourcePolicy
+corsPolicy _ = Just $ simpleCorsResourcePolicy
+                        { corsMethods = ["GET", "HEAD"]
+                        , corsRequestHeaders = "authorization":simpleHeaders
+                        }
+
 app :: Text -> Connection -> Application
-app jwtSecret conn = simpleCors $
+app jwtSecret conn = cors corsPolicy $
   serveWithContext myApi
     (genAuthServerContext jwtSecret)
     (genAuthServer conn)
