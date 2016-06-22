@@ -16,7 +16,6 @@ import qualified Database as DB
 
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -33,7 +32,7 @@ validateJwt jwtSecret authHeader =
   let jwt = T.drop (T.length "Bearer ") (cs authHeader)
    in case Jwt.decodeAndVerifySignature (Jwt.secret jwtSecret) jwt of
         Just verifiedJwt -> return verifiedJwt
-        Nothing -> throwError (err403 { errBody = "Invalid signature" <> cs jwt })
+        Nothing -> throwError (err403 { errBody = "Invalid signature" })
 
 authHandler :: Text -> AuthHandler Request (JWT VerifiedJWT)
 authHandler jwtSecret =
