@@ -25,6 +25,7 @@ library
                      , cassava
                      , http-media
                      , iconv
+                     , jwt
                      , postgresql-simple
                      , servant
                      , servant-server
