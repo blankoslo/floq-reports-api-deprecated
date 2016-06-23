@@ -16,6 +16,7 @@ import qualified Database as DB
 
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
+import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -24,17 +25,17 @@ import Network.Wai
 import Network.Wai.Middleware.Cors
 import Servant
 import Servant.Server.Experimental.Auth (AuthServerData, AuthHandler, mkAuthHandler)
-import Web.JWT (JWT, VerifiedJWT)
-import qualified Web.JWT as Jwt
+import Jose.Jws
+import Jose.Jwt
 
-validateJwt :: Text -> ByteString -> Handler (JWT VerifiedJWT)
+validateJwt :: Text -> ByteString -> Handler Jws
 validateJwt jwtSecret authHeader =
   let jwt = T.drop (T.length "Bearer ") (cs authHeader)
-   in case Jwt.decodeAndVerifySignature (Jwt.secret jwtSecret) jwt of
-        Just verifiedJwt -> return verifiedJwt
-        Nothing -> throwError (err403 { errBody = "Invalid signature" })
+  in case hmacDecode (cs jwtSecret) (cs jwt) of
+        Right verifiedJwt -> return verifiedJwt
+        Left err          -> throwError (err403 { errBody = "Invalid signature: " <> (cs . show) err })
 
-authHandler :: Text -> AuthHandler Request (JWT VerifiedJWT)
+authHandler :: Text -> AuthHandler Request Jws
 authHandler jwtSecret =
   let handler req = case lookup "authorization" (requestHeaders req) of
         Nothing -> throwError (err401 { errBody = "Missing authorization header" })
@@ -50,11 +51,12 @@ type ProjectHoursApi = "hours"
                     :> QueryParam "month" Int
                     :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] ProjectHours)
 
-type Api = AuthProtect "jwt-auth" :> (ProjectsApi :<|> ProjectHoursApi)
+type Api = AuthProtect "jwt-auth" :> ProjectsApi
+      :<|> AuthProtect "jwt-auth" :> ProjectHoursApi
 
-type instance AuthServerData (AuthProtect "jwt-auth") = JWT VerifiedJWT
+type instance AuthServerData (AuthProtect "jwt-auth") = Jws
 
-genAuthServerContext :: Text -> Context (AuthHandler Request (JWT VerifiedJWT) ': '[])
+genAuthServerContext :: Text -> Context (AuthHandler Request Jws ': '[])
 genAuthServerContext jwtSecret = authHandler jwtSecret :. EmptyContext
 
 genAuthServer :: Connection -> Server Api
