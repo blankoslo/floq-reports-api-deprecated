@@ -58,7 +58,7 @@ genAuthServerContext :: Text -> Context (AuthHandler Request (JWT VerifiedJWT) '
 genAuthServerContext jwtSecret = authHandler jwtSecret :. EmptyContext
 
 genAuthServer :: Connection -> Server Api
-genAuthServer conn _ = projects conn :<|> projectHours conn
+genAuthServer conn = const (projects conn) :<|> const (projectHours conn)
 
 projectHours :: Connection -> Server ProjectHoursApi
 projectHours conn pid (Just year) (Just mon) = do
