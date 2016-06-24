@@ -51,7 +51,7 @@ type ProjectHoursApi = "hours"
                     :> Capture "id" Int
                     :> QueryParam "year" Int
                     :> QueryParam "month" Int
-                    :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] ProjectHours)
+                    :> Get '[ExcelCSV, JSON] ProjectHours
 
 type Api = AuthProtect "jwt-auth" :> ProjectsApi
       :<|> AuthProtect "jwt-auth" :> ProjectHoursApi
@@ -65,10 +65,7 @@ genAuthServer :: Connection -> Server Api
 genAuthServer conn = const (projects conn) :<|> const (projectHours conn)
 
 projectHours :: Connection -> Server ProjectHoursApi
-projectHours conn pid (Just year) (Just mon) = do
-  hours' <- liftIO (DB.projectHours conn pid mon year)
-  let contentDispHeader = "attachment; filename=hours-" ++ show year ++ "-" ++ show mon ++ ".csv"
-  (return . addHeader contentDispHeader) hours'
+projectHours conn pid (Just year) (Just mon) = liftIO (DB.projectHours conn pid mon year)
 projectHours _ _ _ _ = throwError err400 { errBody = "Missing `month` or `year` parameter" }
 
 projects :: Connection -> Server ProjectsApi
