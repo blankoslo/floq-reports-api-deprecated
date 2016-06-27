@@ -28,7 +28,7 @@ import Network.HTTP.Media ((//), (/:))
 
 -- A project
 data Project = Project {
-    projectId :: Int
+    projectId :: Text
   , projectName :: Text
   , customerName :: Text
   } deriving (Generic, Show)
