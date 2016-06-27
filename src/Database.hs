@@ -18,7 +18,7 @@ import qualified Data.Text as T
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
-project :: Connection -> Int -> IO (Maybe Project)
+project :: Connection -> Text -> IO (Maybe Project)
 project conn pid = do
   let selectQuery = [sql| select p.id, p.name, c.name
                           from projects p, customers c
@@ -35,7 +35,7 @@ projects conn = query_ conn [sql| select p.id, p.name, c.name
                                   where p.customer = c.id
                                   order by billable desc, id; |]
 
-employeeHours :: Connection -> Int -> Month -> Year -> IO [EmployeeHours]
+employeeHours :: Connection -> Text -> Month -> Year -> IO [EmployeeHours]
 employeeHours conn pid month year = do
   let fetchQuery = [sql|select e.first_name || ' ' || e.last_name as name, (
                             select array_agg(coalesce(t.sum, 0)) :: float8[]
@@ -65,7 +65,7 @@ employeeHours conn pid month year = do
         startDate = T.pack $ show year <> "-" <> show month <> "-1"
         endDate   = T.pack $ show year <> "-" <> show month <> "-" <> show (lastDay month year)
 
-projectHours :: Connection -> Int -> Month -> Year -> IO ProjectHours
+projectHours :: Connection -> Text -> Month -> Year -> IO ProjectHours
 projectHours conn pid mon year = do
   (Just p) <- project conn pid
   hs <- employeeHours conn pid mon year

@@ -48,7 +48,7 @@ type ProjectsApi = "projects"
                 :> Get '[JSON] [Project]
 
 type ProjectHoursApi = "hours"
-                    :> Capture "id" Int
+                    :> Capture "id" Text
                     :> QueryParam "year" Int
                     :> QueryParam "month" Int
                     :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] ProjectHours)
