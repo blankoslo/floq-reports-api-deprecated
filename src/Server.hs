@@ -67,7 +67,8 @@ genAuthServer conn = const (projects conn) :<|> const (projectHours conn)
 projectHours :: Connection -> Server ProjectHoursApi
 projectHours conn pid (Just year) (Just mon) = do
   hours' <- liftIO (DB.projectHours conn pid mon year)
-  let contentDispHeader = "attachment; filename=" <> cs pid <> "-" <> show year <> "-" <> show mon <> ".csv"
+  let mon' = if mon < 10 then '0':show mon else show mon
+  let contentDispHeader = "attachment; filename=" <> cs pid <> "-" <> show year <> "-" <> mon' <> ".csv"
   (return . addHeader contentDispHeader) hours'
 projectHours _ _ _ _ = throwError err400 { errBody = "Missing `month` or `year` parameter" }
 
