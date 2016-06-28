@@ -51,7 +51,9 @@ instance FromRow EmployeeHours
 
 -- An employee row is the employee name prepended to the list of hours
 instance ToRecord EmployeeHours where
-    toRecord (EmployeeHours name' hours') = toField name' `V.cons` toRecord hours'
+    toRecord (EmployeeHours name' hours') = toField name' `V.cons` toRecord hours''
+      where hours'' :: Vector EuDecimal
+            hours'' = V.map (EuDecimal) hours'
 
 -- A project together with hours worked by employees
 data ProjectHours = ProjectHours {
