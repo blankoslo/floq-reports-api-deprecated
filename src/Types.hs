@@ -8,6 +8,7 @@ module Types
     Project(..),
     EmployeeHours(..),
     ProjectHours(..),
+    TimeTrackingStatus(..),
     ExcelCSV
   ) where
 
@@ -62,6 +63,16 @@ data ProjectHours = ProjectHours {
   } deriving (Generic, Show)
 
 instance ToJSON ProjectHours
+
+data TimeTrackingStatus = TimeTrackingStatus {
+    employee :: Text
+  , availableHours :: Double
+  , billableHours :: Double
+  } deriving (Generic, Show)
+
+instance ToJSON TimeTrackingStatus
+instance ToRecord TimeTrackingStatus
+instance FromRow TimeTrackingStatus
 
 data ExcelCSV
 

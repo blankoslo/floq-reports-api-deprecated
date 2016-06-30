@@ -8,14 +8,17 @@ module Database
   , projects
   , employeeHours
   , projectHours
+  , timeTrackingStatus
   ) where
 
-import Types (Project, EmployeeHours, ProjectHours(ProjectHours))
+import Types (Project, EmployeeHours, ProjectHours(ProjectHours), TimeTrackingStatus)
 
+import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.Time (parseDate)
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 type Month = Int
@@ -74,6 +77,11 @@ projectHours conn pid mon year = do
   hs <- employeeHours conn pid mon year
   return $ ProjectHours p hs
 
+timeTrackingStatus :: Connection -> ByteString -> ByteString -> IO [TimeTrackingStatus]
+timeTrackingStatus conn startDate endDate = do
+  let Right start = parseDate startDate
+  let Right end = parseDate endDate
+  query conn [sql| select * from time_tracking_status(?, ?) |] (start, end)
 
 -- returns the last day for a given month and year
 lastDay :: Month -> Year -> Day

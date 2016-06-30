@@ -53,8 +53,14 @@ type ProjectHoursApi = "hours"
                     :> QueryParam "month" Int
                     :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] ProjectHours)
 
+type TimeTrackingStatusApi = "time_tracking_status"
+                          :> QueryParam "start_date" Text
+                          :> QueryParam "end_date" Text
+                          :> Get '[ExcelCSV, JSON] [TimeTrackingStatus]
+
 type Api = AuthProtect "jwt-auth" :> ProjectsApi
       :<|> AuthProtect "jwt-auth" :> ProjectHoursApi
+      :<|> AuthProtect "jwt-auth" :> TimeTrackingStatusApi
 
 type instance AuthServerData (AuthProtect "jwt-auth") = Jws
 
@@ -62,7 +68,9 @@ genAuthServerContext :: Text -> Context (AuthHandler Request Jws ': '[])
 genAuthServerContext jwtSecret = authHandler jwtSecret :. EmptyContext
 
 genAuthServer :: Connection -> Server Api
-genAuthServer conn = const (projects conn) :<|> const (projectHours conn)
+genAuthServer conn = const (projects conn)
+                :<|> const (projectHours conn)
+                :<|> const (timeTrackingStatus conn)
 
 projectHours :: Connection -> Server ProjectHoursApi
 projectHours conn pid (Just year) (Just mon) = do
@@ -74,6 +82,13 @@ projectHours _ _ _ _ = throwError err400 { errBody = "Missing `month` or `year` 
 
 projects :: Connection -> Server ProjectsApi
 projects conn = liftIO (DB.projects conn)
+
+timeTrackingStatus :: Connection -> Server TimeTrackingStatusApi
+timeTrackingStatus conn (Just start) (Just end) = do
+  let start' = cs start
+  let end' = cs end
+  liftIO (DB.timeTrackingStatus conn start' end')
+timeTrackingStatus _ _ _ = throwError err400 { errBody = "missing `start_date` or `end_date` parameter" }
 
 myApi :: Proxy Api
 myApi = Proxy
