@@ -18,6 +18,10 @@ import qualified Data.Text as T
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
+type Month = Int
+type Year = Int
+type Day = Int
+
 project :: Connection -> Text -> IO (Maybe Project)
 project conn pid = do
   let selectQuery = [sql| select p.id, p.name, c.name
@@ -70,9 +74,6 @@ projectHours conn pid mon year = do
   hs <- employeeHours conn pid mon year
   return $ ProjectHours p hs
 
-type Month = Int
-type Year = Int
-type Day = Int
 
 -- returns the last day for a given month and year
 lastDay :: Month -> Year -> Day
