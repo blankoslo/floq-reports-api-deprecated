@@ -59,7 +59,6 @@ employeeHours conn pid month year = do
                               and date >= date ?
                               and date <= date ?) > 0;
                    |]
-  print fetchQuery
   query conn fetchQuery (startDate, endDate, pid, startDate, endDate, pid, startDate, endDate)
   where startDate, endDate :: Text
         startDate = T.pack $ show year <> "-" <> show month <> "-1"
