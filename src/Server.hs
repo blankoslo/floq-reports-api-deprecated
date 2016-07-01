@@ -56,7 +56,7 @@ type ProjectHoursApi = "hours"
 type TimeTrackingStatusApi = "time_tracking_status"
                           :> QueryParam "start_date" Text
                           :> QueryParam "end_date" Text
-                          :> Get '[ExcelCSV, JSON] [TimeTrackingStatus]
+                          :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] [TimeTrackingStatus])
 
 type Api = AuthProtect "jwt-auth" :> ProjectsApi
       :<|> AuthProtect "jwt-auth" :> ProjectHoursApi
@@ -87,7 +87,9 @@ timeTrackingStatus :: Connection -> Server TimeTrackingStatusApi
 timeTrackingStatus conn (Just start) (Just end) = do
   let start' = cs start
   let end' = cs end
-  liftIO (DB.timeTrackingStatus conn start' end')
+  status <- liftIO (DB.timeTrackingStatus conn start' end')
+  let contentDispHeader = "attachment; filename=status" <> "-" <> cs start' <> "-" <> cs end' <> ".csv"
+  (return . addHeader contentDispHeader) status
 timeTrackingStatus _ _ _ = throwError err400 { errBody = "missing `start_date` or `end_date` parameter" }
 
 myApi :: Proxy Api

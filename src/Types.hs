@@ -12,6 +12,7 @@ module Types
     ExcelCSV
   ) where
 
+import Data.ByteString.Lazy (ByteString)
 import Data.Char (ord)
 import Data.Monoid ((<>))
 import GHC.Generics
@@ -71,16 +72,24 @@ data TimeTrackingStatus = TimeTrackingStatus {
   } deriving (Generic, Show)
 
 instance ToJSON TimeTrackingStatus
-instance ToRecord TimeTrackingStatus
 instance FromRow TimeTrackingStatus
 
+instance ToRecord TimeTrackingStatus where
+    toRecord (TimeTrackingStatus name available billed) =
+      let available' = EuDecimal available
+          billed'    = EuDecimal billed
+       in record [toField name, toField available', toField billed']
+
 data ExcelCSV
+
+utf16LEByteOrderMark :: ByteString
+utf16LEByteOrderMark = "\xff\xfe"
 
 instance Accept ExcelCSV where
   contentType _ = "text" // "csv" /: ("charset", "utf-16")
 
 instance ToRecord a => MimeRender ExcelCSV [a] where
-  mimeRender _ = encodeWith options
+  mimeRender _ = (utf16LEByteOrderMark <>) . convert "UTF-8" "UTF-16LE" . encodeWith options
     where options = defaultEncodeOptions {
                         encDelimiter = fromIntegral (ord '\t')
                       , encUseCrLf = True
@@ -89,8 +98,7 @@ instance ToRecord a => MimeRender ExcelCSV [a] where
 -- An Excel-friendly csv file starts with a UTF-16LE byte-order mark to indicate
 -- that it's unicode, uses tabs as separators and CRLF line endings.
 instance MimeRender ExcelCSV ProjectHours where
-  mimeRender proxy ph = let utf16LEByteOrderMark = "\xff\xfe"
-                            newLine = "\r\n"
+  mimeRender proxy ph = let newLine = "\r\n"
                             body = mimeRender proxy (project ph)
                                 <> newLine
                                 <> mimeRender proxy (hours ph)
