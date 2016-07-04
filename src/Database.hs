@@ -71,11 +71,13 @@ employeeHours conn pid month year = do
         startDate = T.pack $ show year <> "-" <> show month <> "-1"
         endDate   = T.pack $ show year <> "-" <> show month <> "-" <> show (lastDay month year)
 
-projectHours :: Connection -> Text -> Month -> Year -> IO ProjectHours
+projectHours :: Connection -> Text -> Month -> Year -> IO (Maybe ProjectHours)
 projectHours conn pid mon year = do
-  (Just p) <- project conn pid
-  hs <- employeeHours conn pid mon year
-  return $ ProjectHours p hs
+  project conn pid >>= \case
+    Just p -> do
+      hs <- employeeHours conn pid mon year
+      return . Just $ ProjectHours p hs
+    Nothing -> return Nothing
 
 timeTrackingStatus :: Connection -> ByteString -> ByteString -> IO [TimeTrackingStatus]
 timeTrackingStatus conn startDate endDate = do
