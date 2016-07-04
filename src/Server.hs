@@ -50,12 +50,12 @@ type ProjectHoursApi = "hours"
                     :> Capture "id" Text
                     :> QueryParam "year" Int
                     :> QueryParam "month" Int
-                    :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] ProjectHours)
+                    :> Get '[ExcelCSV, JSON] ProjectHours
 
 type TimeTrackingStatusApi = "time_tracking_status"
                           :> QueryParam "start_date" Text
                           :> QueryParam "end_date" Text
-                          :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] TimeTrackingStatus)
+                          :> Get '[ExcelCSV, JSON] TimeTrackingStatus
 
 type Api = AuthProtect "jwt-auth" :> ProjectsApi
       :<|> AuthProtect "jwt-auth" :> ProjectHoursApi
@@ -75,10 +75,7 @@ projectHours :: Connection -> Server ProjectHoursApi
 projectHours conn pid (Just year) (Just mon) = do
   liftIO (DB.projectHours conn pid mon year) >>= \case
     Just hours' -> do
-      let mon' = if mon < 10 then '0':show mon else show mon
-      let contentDispHeader = "attachment; filename="
-                           <> cs pid <> "-" <> show year <> "-" <> mon' <> ".csv"
-      (return . addHeader contentDispHeader) hours'
+      return hours'
     Nothing -> throwError err404 { errBody = "Project not found" }
 projectHours _ _ _ _ = throwError err400 { errBody = "Missing `month` or `year` parameter" }
 
@@ -87,11 +84,7 @@ projects conn = liftIO (DB.projects conn)
 
 timeTrackingStatus :: Connection -> Server TimeTrackingStatusApi
 timeTrackingStatus conn (Just start) (Just end) = do
-  let start' = cs start
-  let end' = cs end
-  status <- liftIO (DB.timeTrackingStatus conn start' end')
-  let contentDispHeader = "attachment; filename=status" <> "-" <> cs start' <> "-" <> cs end' <> ".csv"
-  (return . addHeader contentDispHeader) status
+  liftIO (DB.timeTrackingStatus conn (cs start) (cs end))
 timeTrackingStatus _ _ _ = throwError err400 { errBody = "missing `start_date` or `end_date` parameter" }
 
 myApi :: Proxy Api
