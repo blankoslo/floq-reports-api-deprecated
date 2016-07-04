@@ -17,10 +17,10 @@ import qualified Database as DB
 
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as BS
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
+import qualified Data.Text as T
 import Database.PostgreSQL.Simple hiding ((:.))
 import Network.Wai
 import Network.Wai.Middleware.Cors
@@ -31,18 +31,16 @@ import Jose.Jwt
 
 validateJwt :: Text -> ByteString -> Handler Jws
 validateJwt jwtSecret authHeader =
-  let jwt = cs authHeader
-  in case hmacDecode (cs jwtSecret) jwt of
+  let jwt = T.drop (T.length "Bearer ") (cs authHeader)
+  in case hmacDecode (cs jwtSecret) (cs jwt) of
         Right verifiedJwt -> return verifiedJwt
         Left err          -> throwError (err403 { errBody = "Invalid signature: " <> (cs . show) err })
 
 authHandler :: Text -> AuthHandler Request Jws
 authHandler jwtSecret =
   let handler req = case lookup "authorization" (requestHeaders req) of
-        Nothing -> case lookup "jwt" (queryString req) of
-          Just (Just (jwt)) -> validateJwt jwtSecret jwt
-          _                 -> throwError (err401 { errBody = "Missing authorization header" })
-        Just jwt -> validateJwt jwtSecret $ BS.drop (BS.length "Bearer ") jwt
+        Nothing -> throwError (err401 { errBody = "Missing authorization header" })
+        Just authCookieKey -> validateJwt jwtSecret authCookieKey
   in mkAuthHandler handler
 
 type ProjectsApi = "projects"
