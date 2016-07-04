@@ -8,6 +8,7 @@ module Types
     Project(..),
     EmployeeHours(..),
     ProjectHours(..),
+    EmployeeLoggedHours(..),
     TimeTrackingStatus(..),
     ExcelCSV
   ) where
@@ -65,20 +66,25 @@ data ProjectHours = ProjectHours {
 
 instance ToJSON ProjectHours
 
-data TimeTrackingStatus = TimeTrackingStatus {
+data EmployeeLoggedHours = EmployeeLoggedHours {
     employee :: Text
   , availableHours :: Double
   , billableHours :: Double
   } deriving (Generic, Show)
 
-instance ToJSON TimeTrackingStatus
-instance FromRow TimeTrackingStatus
+instance ToJSON EmployeeLoggedHours
+instance FromRow EmployeeLoggedHours
 
-instance ToRecord TimeTrackingStatus where
-    toRecord (TimeTrackingStatus name available billed) =
+instance ToRecord EmployeeLoggedHours where
+    toRecord (EmployeeLoggedHours name available billed) =
       let available' = EuDecimal available
           billed'    = EuDecimal billed
        in record [toField name, toField available', toField billed']
+
+newtype TimeTrackingStatus = TimeTrackingStatus [EmployeeLoggedHours]
+  deriving (Generic, Show)
+
+instance ToJSON TimeTrackingStatus
 
 data ExcelCSV
 
@@ -89,8 +95,7 @@ instance Accept ExcelCSV where
   contentType _ = "text" // "csv" /: ("charset", "utf-16")
 
 instance ToRecord a => MimeRender ExcelCSV [a] where
-  mimeRender _ = (utf16LEByteOrderMark <>) . convert "UTF-8" "UTF-16LE" . encodeWith options
-    where options = defaultEncodeOptions {
+  mimeRender _ = encodeWith defaultEncodeOptions {
                         encDelimiter = fromIntegral (ord '\t')
                       , encUseCrLf = True
                       }
@@ -104,6 +109,11 @@ instance MimeRender ExcelCSV ProjectHours where
                                 <> mimeRender proxy (hours ph)
                             encoded = convert "UTF-8" "UTF-16LE" body
                          in utf16LEByteOrderMark <> encoded
+
+instance MimeRender ExcelCSV TimeTrackingStatus where
+  mimeRender proxy (TimeTrackingStatus hours') =
+    let body = mimeRender proxy hours'
+     in utf16LEByteOrderMark <> convert "UTF-8" "UTF-16LE" body
 
 -- A data type representing decimals that should use comma as a separator
 newtype EuDecimal = EuDecimal Double

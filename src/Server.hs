@@ -57,7 +57,7 @@ type ProjectHoursApi = "hours"
 type TimeTrackingStatusApi = "time_tracking_status"
                           :> QueryParam "start_date" Text
                           :> QueryParam "end_date" Text
-                          :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] [TimeTrackingStatus])
+                          :> Get '[ExcelCSV, JSON] (Headers '[Header "Content-Disposition" String] TimeTrackingStatus)
 
 type Api = AuthProtect "jwt-auth" :> ProjectsApi
       :<|> AuthProtect "jwt-auth" :> ProjectHoursApi
