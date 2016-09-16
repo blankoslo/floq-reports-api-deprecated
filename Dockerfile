@@ -3,7 +3,10 @@ FROM debian:jessie
 RUN apt-get update && apt-get install -y libpq5
 
 COPY dist/floq-reports /floq-reports
+COPY urlencode.sh /urlencode.sh
 
 EXPOSE 3000
 
-ENTRYPOINT ["/floq-reports"]
+CMD exec /floq-reports --jwt-secret $POSTGREST_JWT_SECRET \
+  postgres://${PG_ENV_POSTGRES_USER}:`/urlencode.sh "${PG_ENV_POSTGRES_PASS}"`@${PG_PORT_5432_TCP_ADDR}/${PG_ENV_POSTGRES_DB}
+
