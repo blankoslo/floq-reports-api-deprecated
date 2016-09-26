@@ -15,32 +15,24 @@ env:
   global:
   - secure: D9P/2tkFg2B1bZKBMQSCHHDvMOXfMfxYIoUyZPomLelnxwBKywuwnqi80XcIW5O8VL4iUyDHjndLYEfnvBz0B6F4aAdhBWvNWxFK/LMzUejuw1rdhU3X5P2cwOiT70cAgCfRiVOPTf1tMcS/QK2+ent70a6IwRzANHYxTqwcIUf2spHkORssk8XL99Mbt+COhzXW+Iekt45UhhdfXT46wuHGvsrG3tvlNSC7OAk1kWRWvzxCxU/7z6kqtjGTiW8cBP+XLA/YEVYKttUHWKcQeJiZBFktMv1JzjrdGpEhJzUyNSKuLx5UrodGUNM8gFPyZOj2DzX68nfWIzEpKTwB7IbVmJF00XeoVAyBUI4nnaiseidBXgkOggBbgRTI4r8JeE6jN5V2DJI6PCK4GxXWoNlZ2Skdqv9Gq6LltXgvR1T+XUg1MI1hlo5FuRwCT54goNFiMWZi58Bd6zXhXF8nAZC4CjENY4iluDSrpkNonY2XVnljl3y8IvfiMGqXAoCrD2gXztHQsjrr7p84aHOycu7zn9WXy8DJcGTVLvidLtT4ve1LUwSaagHma/JiSbiIMcsKMKafNlcHOZuJJIZxulzx1Lut+dyLGvUJM/jnPJoBLvGhxDfsRTpXbdgk7gHEvLsk7jSU8QER8TLQDZ6g0FW2O8XV2YSW4ZpW2DHkqCA=
   - secure: Y05H8fZ7m3kY9k9qCfGH1krAYrvLLE8suIpyaak9QUza4UsHddYqb6LWVeXJloFZrnnRkVrl5BaKqOOXzjcgqXJfXkMGZmM08B3GkbHRG0o8xqy3KGlLBYmFg2nDQpK57DhowtLNWUxnnNqhOdWtQSfTua3CU+OCb+Ucjn4VLj6sW3I2Ul+2s/GcxitmlNx7E+NA4UBYdKwfe1bY54ZwoOHOtCSxUQYltu3Hpc8hEK9WultRxJykYHgxnLJsahjjEr8ZC4EdI7By7UbGJPwfUB9S2/8q9Zm+hpiTA/YFWfHVqkVUYjAOyepmhDqmE0qEZW/FhAzlNyGBAhkQfg2oMrV78NKsMbDDYpfGHrXO2DBLWYfKfaOH450olzpjkkeQbx7SvnNajd99NBkqs7zZczRqXi/TQ4A7R7flclv4sMt+FH1SYERJ9p76J4x4fZho8TjXHABdCudRdBbeWJAqTcFU168RftPUv7kudArEulyMl69CT/r+/HIbJFKOxcNsGo3ot8pilwKrp/8+BrDKJ3lFcyTSKVjn9I8TXFrNI3zM22+Fn+FsGQKoiS9tAzg2sdm4zRyI9lL2JmB8rsM3YBYjeycWuUCJpbX9AgUqPQCO0PLtDT5yNJkpvPc6YkqtwdJCFq1yrJhHeWIvqdKpa5hzC2Sf5UeZ7gMbfFelWNc=
-script:
-- stack --no-terminal --install-ghc build
 before_install:
-- openssl aes-256-cbc -K $encrypted_129cbaf6d0a3_key -iv $encrypted_129cbaf6d0a3_iv
-  -in client-secret.json.enc -out client-secret.json -d
 - mkdir -p ~/.local/bin
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards
   --strip-components=1 -C ~/.local/bin '*/stack'
 - stack --version
-- if [ ! -d ${HOME}/google-cloud-sdk ]; then curl https://sdk.cloud.google.com | bash;
-  fi
-- export PATH=${HOME}/google-cloud-sdk/bin:$PATH
-- gcloud auth activate-service-account --key-file client-secret.json
-- gcloud components update
-- gcloud components install kubectl
-- gcloud config set container/cluster floq
-- gcloud config set compute/zone europe-west1-b
-- gcloud config set project marine-cycle-97212
-- gcloud container clusters get-credentials floq
-install:
-- docker build -t floq .
-- docker run -d -p 127.0.0.1:3000:3000 floq
-- docker ps -a
+- openssl aes-256-cbc -K $encrypted_129cbaf6d0a3_key -iv $encrypted_129cbaf6d0a3_iv
+  -in client-secret.json.enc -out client-secret.json -d
+- ./setup_gcloud
+script:
+- stack --no-terminal --install-ghc build
 after_success:
-- "./deploy"
+- stack install
+- mkdir dist && cp ~/.local/bin/floq-reports dist/
+- docker build -t floq-reports .
+- docker run -d -p 127.0.0.1:3000:3000 floq-reports
+- docker ps -a
+- ./deploy
 notifications:
   slack:
     secure: zMTZ7pf8OnUqXa/otMhtwmjVDrZQOTTtWgC1Z3WrYMk2uyoRaDVK7mdisn/PjhGaQRMMesZ+/wTAbst3JFnYictIYMLJrUXYwk4MorV4pZ17ZDRFhwu3wFdzcfQgiqp8sPf7DEsPEFVRfHRYkuMV6GmVShBgl57gNAHYbq8GRLpeQbicRnxVP6UEfVN6qX1Ahydh4SIlV6uLQrcVy3fXWrvl52p+gjOJE/xoUBJBHr8BxY2mV1Z0oHY71cMUDsRZ0XYhww7mqHHYonW35c/+2K7rDk9bLrHt7rUiGcz5Kfxc9KBZRQIbE8qtKQXLKWPyK5OYEQLqySY1HprXC3O6IUsDhlo1RrPs7TUHg2fh0Jvpx/+PWj3iYf37o+I1oa71SbvXAEnHWqnbNWaxrq2Rp8FgRT6CDvIMdt44hvg7n5guYGGwbO9VdFz0ZwtGO4b3gGbqRpp2yUwH+OYnU9b32hxlMrbKPFaivu1fDLtUspLtujgjW1fYIR0aYhqW1LQ3X908JQic8B/Pw9igaviQLSQ0PYIOv4VIxxKDk9Ub9gXvt2UgISqBH6DkNy05hTEveAuhCvmgSxfWN4PhVhyzD16erYB+i2jhE1OhGkNaczez8vOnhuFHOBvCdlIqg6ZIbDaE4zx7RS73OaI1XYxjHxSLoe4pDOdMlU2jeygE4Ks=
