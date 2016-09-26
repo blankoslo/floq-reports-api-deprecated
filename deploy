@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "feature/travis-support" ]; then
+  ENV=test;
+  TAG="$ENV-$TRAVIS_COMMIT";
+  docker login --username="$DOCKER_USER" --password="$DOCKER_PASS";
+  docker tag floq "blankoslo/floq-reports:$TAG";
+  docker push "blankoslo/floq-reports:$TAG";
+  export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/client-secret.json";
+  kubectl set image deployment/floq-reports-blank-$ENV \
+    "floq-reports-blank-$ENV=blankoslo/floq-reports:$TAG";
+fi
+
