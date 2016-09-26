@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "feature/travis-support" ]; then
+  ENV=test;
+elif [ "$TRAVIS_BRANCH" == "master" ]; then
+  ENV=prod;
+else
+  unset ENV;
+fi
+
+if ! [ -z "$ENV" ]; then
+  TAG="$ENV-$TRAVIS_COMMIT";
+  docker login --username="$DOCKER_USER" --password="$DOCKER_PASS";
+  docker tag floq-reports "blankoslo/floq-reports:$TAG";
+  docker push "blankoslo/floq-reports:$TAG";
+  export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/client-secret.json";
+  "$HOME/google-cloud-sdk/bin/kubectl" \
+    set image deployment/floq-reports-blank-$ENV \
+    "floq-reports-blank-$ENV=blankoslo/floq-reports:$TAG";
+fi
+
