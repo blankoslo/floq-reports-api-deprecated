@@ -70,16 +70,17 @@ data EmployeeLoggedHours = EmployeeLoggedHours {
     employee :: Text
   , availableHours :: Double
   , billableHours :: Double
+  , lockedDate :: Maybe Text
   } deriving (Generic, Show)
 
 instance ToJSON EmployeeLoggedHours
 instance FromRow EmployeeLoggedHours
 
 instance ToRecord EmployeeLoggedHours where
-    toRecord (EmployeeLoggedHours name available billed) =
+    toRecord (EmployeeLoggedHours name available billed locked) =
       let available' = EuDecimal available
           billed'    = EuDecimal billed
-       in record [toField name, toField available', toField billed']
+       in record [toField name, toField available', toField billed', toField locked]
 
 newtype TimeTrackingStatus = TimeTrackingStatus [EmployeeLoggedHours]
   deriving (Generic, Show)
