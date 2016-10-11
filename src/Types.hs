@@ -3,6 +3,8 @@
 {-# Language MultiParamTypeClasses #-}
 {-# Language OverloadedStrings #-}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Types
   (
     Project(..),
@@ -22,10 +24,12 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V
 
 import Codec.Text.IConv (convert)
-import Data.Aeson.Types (ToJSON)
+import Data.Aeson.Types (ToJSON (..))
 import Data.String.Conversions (cs)
 import Data.Csv
+import Data.Time.Calendar (showGregorian)
 import Database.PostgreSQL.Simple.FromRow
+import Database.PostgreSQL.Simple.Time (Date, Unbounded (..))
 import Servant.API.ContentTypes
 import Network.HTTP.Media ((//), (/:))
 
@@ -70,11 +74,19 @@ data EmployeeLoggedHours = EmployeeLoggedHours {
     employee :: Text
   , availableHours :: Double
   , billableHours :: Double
-  , lockedDate :: Maybe Text
+  , lockedDate :: Maybe Date
   } deriving (Generic, Show)
 
 instance ToJSON EmployeeLoggedHours
 instance FromRow EmployeeLoggedHours
+
+instance ToField Date where
+  toField (Finite day) = (cs . showGregorian) day
+  toField _            = error "Cannot represent infinity"
+
+instance ToJSON Date where
+  toJSON (Finite day) = toJSON day
+  toJSON _            = error "Cannot represent infinity"
 
 instance ToRecord EmployeeLoggedHours where
     toRecord (EmployeeLoggedHours name available billed locked) =
