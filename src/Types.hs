@@ -74,7 +74,11 @@ data EmployeeLoggedHours = EmployeeLoggedHours {
     employee :: Text
   , availableHours :: Double
   , billableHours :: Double
-  , lockedDate :: Maybe Date
+  , nonBillableHours :: Double
+  , unavailableHours :: Double
+  , unregisteredDays :: Int
+  , lastTimeEntryDate :: Date
+  , lastTimeEntryCreated :: Date
   } deriving (Generic, Show)
 
 instance ToJSON EmployeeLoggedHours
@@ -89,10 +93,10 @@ instance ToJSON Date where
   toJSON _            = error "Cannot represent infinity"
 
 instance ToRecord EmployeeLoggedHours where
-    toRecord (EmployeeLoggedHours name available billed locked) =
+    toRecord (EmployeeLoggedHours name available billed nonBilled unavailable unregistered lastDate lastCreated) =
       let available' = EuDecimal available
           billed'    = EuDecimal billed
-       in record [toField name, toField available', toField billed', toField locked]
+       in record [toField name, toField available', toField billed', toField nonBilled, toField unavailable, toField unregistered, toField lastDate, toField lastCreated]
 
 newtype TimeTrackingStatus = TimeTrackingStatus [EmployeeLoggedHours]
   deriving (Generic, Show)
