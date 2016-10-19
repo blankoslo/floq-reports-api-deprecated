@@ -94,9 +94,11 @@ instance ToJSON Date where
 
 instance ToRecord EmployeeLoggedHours where
     toRecord (EmployeeLoggedHours name available billed nonBilled unavailable unregistered lastDate lastCreated) =
-      let available' = EuDecimal available
-          billed'    = EuDecimal billed
-       in record [toField name, toField available', toField billed', toField nonBilled, toField unavailable, toField unregistered, toField lastDate, toField lastCreated]
+      let available'   = EuDecimal available
+          billed'      = EuDecimal billed
+          nonBilled'   = EuDecimal nonBilled
+          unavailable' = EuDecimal unavailable
+       in record [toField name, toField available', toField billed', toField nonBilled', toField unavailable', toField unregistered, toField lastDate, toField lastCreated]
 
 newtype TimeTrackingStatus = TimeTrackingStatus [EmployeeLoggedHours]
   deriving (Generic, Show)
