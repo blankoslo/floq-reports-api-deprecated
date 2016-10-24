@@ -21,6 +21,7 @@ import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time.Calendar (Day)
 import Database.PostgreSQL.Simple hiding ((:.))
 import Network.Wai
 import Network.Wai.Middleware.Cors
@@ -48,8 +49,8 @@ type ProjectsApi = "projects"
 
 type ProjectHoursApi = "hours"
                     :> Capture "id" Text
-                    :> QueryParam "start_date" Text
-                    :> QueryParam "end_date" Text
+                    :> QueryParam "start_date" Day
+                    :> QueryParam "end_date" Day
                     :> Get '[ExcelCSV, JSON] ProjectHours
 
 type TimeTrackingStatusApi = "time_tracking_status"

@@ -15,6 +15,7 @@ import Types (Project, EmployeeHours, ProjectHours(ProjectHours), TimeTrackingSt
 
 import Data.ByteString (ByteString)
 import Data.Text (Text)
+import Data.Time.Calendar (Day)
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Time (parseDate)
 import Database.PostgreSQL.Simple.SqlQQ (sql)
@@ -36,7 +37,7 @@ projects conn = query_ conn [sql| select p.id, p.name, c.name
                                   where p.customer = c.id
                                   order by billable desc, id; |]
 
-employeeHours :: Connection -> Text -> Text -> Text -> IO [EmployeeHours]
+employeeHours :: Connection -> Text -> Day -> Day -> IO [EmployeeHours]
 employeeHours conn pid startDate endDate = do
   let fetchQuery = [sql|select e.first_name || ' ' || e.last_name as name, (
                             select array_agg(coalesce(t.sum, 0)) :: float8[]
@@ -62,7 +63,7 @@ employeeHours conn pid startDate endDate = do
                    |]
   query conn fetchQuery (startDate, endDate, pid, startDate, endDate, pid, startDate, endDate)
 
-projectHours :: Connection -> Text -> Text -> Text -> IO (Maybe ProjectHours)
+projectHours :: Connection -> Text -> Day -> Day -> IO (Maybe ProjectHours)
 projectHours conn pid startDate endDate = do
   project conn pid >>= \case
     Just p -> do
