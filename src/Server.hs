@@ -48,8 +48,8 @@ type ProjectsApi = "projects"
 
 type ProjectHoursApi = "hours"
                     :> Capture "id" Text
-                    :> QueryParam "year" Int
-                    :> QueryParam "month" Int
+                    :> QueryParam "start_date" Text
+                    :> QueryParam "end_date" Text
                     :> Get '[ExcelCSV, JSON] ProjectHours
 
 type TimeTrackingStatusApi = "time_tracking_status"
@@ -72,12 +72,12 @@ genAuthServer conn = const (projects conn)
                 :<|> const (timeTrackingStatus conn)
 
 projectHours :: Connection -> Server ProjectHoursApi
-projectHours conn pid (Just year) (Just mon) = do
-  liftIO (DB.projectHours conn pid mon year) >>= \case
+projectHours conn pid (Just start_date) (Just end_date) = do
+  liftIO (DB.projectHours conn pid start_date end_date) >>= \case
     Just hours' -> do
       return hours'
     Nothing -> throwError err404 { errBody = "Project not found" }
-projectHours _ _ _ _ = throwError err400 { errBody = "Missing `month` or `year` parameter" }
+projectHours _ _ _ _ = throwError err400 { errBody = "Missing `start_date` and/or `end_date` parameter" }
 
 projects :: Connection -> Server ProjectsApi
 projects conn = liftIO (DB.projects conn)

@@ -14,16 +14,10 @@ module Database
 import Types (Project, EmployeeHours, ProjectHours(ProjectHours), TimeTrackingStatus(TimeTrackingStatus))
 
 import Data.ByteString (ByteString)
-import Data.Monoid ((<>))
 import Data.Text (Text)
-import qualified Data.Text as T
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Time (parseDate)
 import Database.PostgreSQL.Simple.SqlQQ (sql)
-
-type Month = Int
-type Year = Int
-type Day = Int
 
 project :: Connection -> Text -> IO (Maybe Project)
 project conn pid = do
@@ -42,8 +36,8 @@ projects conn = query_ conn [sql| select p.id, p.name, c.name
                                   where p.customer = c.id
                                   order by billable desc, id; |]
 
-employeeHours :: Connection -> Text -> Month -> Year -> IO [EmployeeHours]
-employeeHours conn pid month year = do
+employeeHours :: Connection -> Text -> Text -> Text -> IO [EmployeeHours]
+employeeHours conn pid startDate endDate = do
   let fetchQuery = [sql|select e.first_name || ' ' || e.last_name as name, (
                             select array_agg(coalesce(t.sum, 0)) :: float8[]
                             from generate_series(date ?, date ?, '1 day'::interval) i
@@ -67,15 +61,12 @@ employeeHours conn pid month year = do
                               and date <= date ?) > 0;
                    |]
   query conn fetchQuery (startDate, endDate, pid, startDate, endDate, pid, startDate, endDate)
-  where startDate, endDate :: Text
-        startDate = T.pack $ show year <> "-" <> show month <> "-1"
-        endDate   = T.pack $ show year <> "-" <> show month <> "-" <> show (lastDay month year)
 
-projectHours :: Connection -> Text -> Month -> Year -> IO (Maybe ProjectHours)
-projectHours conn pid mon year = do
+projectHours :: Connection -> Text -> Text -> Text -> IO (Maybe ProjectHours)
+projectHours conn pid startDate endDate = do
   project conn pid >>= \case
     Just p -> do
-      hs <- employeeHours conn pid mon year
+      hs <- employeeHours conn pid startDate endDate
       return . Just $ ProjectHours p hs
     Nothing -> return Nothing
 
@@ -84,13 +75,3 @@ timeTrackingStatus conn startDate endDate = do
   let Right start = parseDate startDate
   let Right end = parseDate endDate
   TimeTrackingStatus <$> query conn [sql| select * from time_tracking_status(?, ?) |] (start, end)
-
--- returns the last day for a given month and year
-lastDay :: Month -> Year -> Day
-lastDay month year
-  | month `elem` [1,3,5,7,8,10,12] = 31
-  | month `elem` [4,6,9,11]        = 30
-  | month == 2 = if year `mod` 4 == 0 && (year `mod` 100 /= 0 || year `mod` 400 == 0)
-                 then 29
-                 else 28
-lastDay _ _ = error "dates are hard"
