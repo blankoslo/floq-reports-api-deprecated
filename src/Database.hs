@@ -59,7 +59,8 @@ employeeHours conn pid startDate endDate = do
                             where e.id = t.employee
                               and project = ?
                               and date >= date ?
-                              and date <= date ?) > 0;
+                              and date <= date ?) > 0
+                        order by e.first_name, e.last_name;
                    |]
   query conn fetchQuery (startDate, endDate, pid, startDate, endDate, pid, startDate, endDate)
 
