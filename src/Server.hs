@@ -73,10 +73,9 @@ genAuthServer conn = const (projects conn)
                 :<|> const (timeTrackingStatus conn)
 
 projectHours :: Connection -> Server ProjectHoursApi
-projectHours conn pid (Just start_date) (Just end_date) = do
+projectHours conn pid (Just start_date) (Just end_date) =
   liftIO (DB.projectHours conn pid start_date end_date) >>= \case
-    Just hours' -> do
-      return hours'
+    Just hours' -> return hours'
     Nothing -> throwError err404 { errBody = "Project not found" }
 projectHours _ _ _ _ = throwError err400 { errBody = "Missing `start_date` and/or `end_date` parameter" }
 
@@ -84,7 +83,7 @@ projects :: Connection -> Server ProjectsApi
 projects conn = liftIO (DB.projects conn)
 
 timeTrackingStatus :: Connection -> Server TimeTrackingStatusApi
-timeTrackingStatus conn (Just start) (Just end) = do
+timeTrackingStatus conn (Just start) (Just end) =
   liftIO (DB.timeTrackingStatus conn (cs start) (cs end))
 timeTrackingStatus _ _ _ = throwError err400 { errBody = "missing `start_date` or `end_date` parameter" }
 

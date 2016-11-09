@@ -60,7 +60,7 @@ instance FromRow EmployeeHours
 instance ToRecord EmployeeHours where
     toRecord (EmployeeHours name' hours') = toField name' `V.cons` toRecord hours''
       where hours'' :: Vector EuDecimal
-            hours'' = V.map (EuDecimal) hours'
+            hours'' = V.map EuDecimal hours'
 
 -- A project together with hours worked by employees
 data ProjectHours = ProjectHours {
