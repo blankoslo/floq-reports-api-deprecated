@@ -77,6 +77,7 @@ data EmployeeLoggedHours = EmployeeLoggedHours {
   , nonBillableHours :: Double
   , unavailableHours :: Double
   , unregisteredDays :: Int
+  -- these fields could be NULL for new employees:
   , lastTimeEntryDate :: Maybe Date
   , lastTimeEntryCreated :: Maybe Date
   } deriving (Generic, Show)
