@@ -60,7 +60,7 @@ instance FromRow EmployeeHours
 instance ToRecord EmployeeHours where
     toRecord (EmployeeHours name' hours') = toField name' `V.cons` toRecord hours''
       where hours'' :: Vector EuDecimal
-            hours'' = V.map (EuDecimal) hours'
+            hours'' = V.map EuDecimal hours'
 
 -- A project together with hours worked by employees
 data ProjectHours = ProjectHours {
@@ -77,8 +77,9 @@ data EmployeeLoggedHours = EmployeeLoggedHours {
   , nonBillableHours :: Double
   , unavailableHours :: Double
   , unregisteredDays :: Int
-  , lastTimeEntryDate :: Date
-  , lastTimeEntryCreated :: Date
+  -- these fields could be NULL for new employees:
+  , lastTimeEntryDate :: Maybe Date
+  , lastTimeEntryCreated :: Maybe Date
   } deriving (Generic, Show)
 
 instance ToJSON EmployeeLoggedHours

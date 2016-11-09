@@ -65,7 +65,7 @@ employeeHours conn pid startDate endDate = do
   query conn fetchQuery (startDate, endDate, pid, startDate, endDate, pid, startDate, endDate)
 
 projectHours :: Connection -> Text -> Day -> Day -> IO (Maybe ProjectHours)
-projectHours conn pid startDate endDate = do
+projectHours conn pid startDate endDate =
   project conn pid >>= \case
     Just p -> do
       hs <- employeeHours conn pid startDate endDate
