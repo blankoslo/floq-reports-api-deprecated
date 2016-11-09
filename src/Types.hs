@@ -77,8 +77,8 @@ data EmployeeLoggedHours = EmployeeLoggedHours {
   , nonBillableHours :: Double
   , unavailableHours :: Double
   , unregisteredDays :: Int
-  , lastTimeEntryDate :: Date
-  , lastTimeEntryCreated :: Date
+  , lastTimeEntryDate :: Maybe Date
+  , lastTimeEntryCreated :: Maybe Date
   } deriving (Generic, Show)
 
 instance ToJSON EmployeeLoggedHours
