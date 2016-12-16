@@ -1,4 +1,4 @@
 dist/
 /.stack-work/
 /client-secret.json
-
+floq-reports.cabal
