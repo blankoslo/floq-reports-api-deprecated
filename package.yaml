@@ -1,0 +1,51 @@
+name: floq-reports
+version: '0.1.0.0'
+synopsis: Rerport generator for floq
+description: Please see README.md
+category: Web
+author: Erlend Hamberg
+maintainer: eh@blank.no
+copyright: Erlend Hamberg
+license: BSD3
+homepage: https://github.com/blankoslo/floq-reports-api#readme
+
+ghc-options:
+  - -O2
+  - -Wall
+  - -Werror
+
+dependencies:
+  - base
+  - postgresql-simple
+  - string-conversions
+
+library:
+  source-dirs: src
+  exposed-modules:
+    - Database
+    - Types
+    - Server
+  dependencies:
+    - aeson
+    - bytestring
+    - cassava
+    - http-media
+    - iconv
+    - jose-jwt
+    - servant
+    - servant-server
+    - text
+    - time
+    - transformers
+    - vector
+    - wai
+    - wai-cors
+
+executables:
+  floq-reports:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+      - floq-reports
+      - optparse-applicative
+      - warp
