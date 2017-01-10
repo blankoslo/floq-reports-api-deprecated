@@ -67,8 +67,8 @@ type instance AuthServerData (AuthProtect "jwt-auth") = Jws
 genAuthServerContext :: Text -> Context (AuthHandler Request Jws ': '[])
 genAuthServerContext jwtSecret = authHandler jwtSecret :. EmptyContext
 
-genAuthServer :: Connection -> Server Api
-genAuthServer conn = const (projects conn)
+server :: Connection -> Server Api
+server conn = const (projects conn)
                 :<|> const (projectHours conn)
                 :<|> const (timeTrackingStatus conn)
 
@@ -100,4 +100,4 @@ app :: Text -> Connection -> Application
 app jwtSecret conn = cors corsPolicy $
   serveWithContext myApi
     (genAuthServerContext jwtSecret)
-    (genAuthServer conn)
+    (server conn)
