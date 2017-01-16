@@ -29,8 +29,8 @@ script:
 after_success:
 - stack install
 - mkdir dist && cp ~/.local/bin/floq-reports dist/
-- docker build -t floq-reports .
-- docker run -d -p 127.0.0.1:3000:3000 floq-reports
+- docker build -t floq-reports-api .
+- docker run -d -p 127.0.0.1:3000:3000 floq-reports-api
 - docker ps -a
 - ./deploy
 notifications:
