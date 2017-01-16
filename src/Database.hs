@@ -9,6 +9,7 @@ module Database
   , employeeHours
   , projectHours
   , timeTrackingStatus
+  , health
   ) where
 
 import Types (Project, EmployeeHours, ProjectHours(ProjectHours), TimeTrackingStatus(TimeTrackingStatus))
@@ -77,3 +78,6 @@ timeTrackingStatus conn startDate endDate = do
   let Right start = parseDate startDate
   let Right end = parseDate endDate
   TimeTrackingStatus <$> query conn [sql| select * from time_tracking_status(?, ?) |] (start, end)
+
+health :: Connection -> IO Bool
+health conn = projects conn >> return True

@@ -58,19 +58,24 @@ type TimeTrackingStatusApi = "time_tracking_status"
                           :> QueryParam "end_date" Text
                           :> Get '[ExcelCSV, JSON] TimeTrackingStatus
 
+type HealthApi = "health"
+              :> Get '[JSON] Bool
+
 type Api = AuthProtect "jwt-auth" :> ProjectsApi
       :<|> AuthProtect "jwt-auth" :> ProjectHoursApi
       :<|> AuthProtect "jwt-auth" :> TimeTrackingStatusApi
+      :<|> HealthApi
 
 type instance AuthServerData (AuthProtect "jwt-auth") = Jws
 
 genAuthServerContext :: Text -> Context (AuthHandler Request Jws ': '[])
 genAuthServerContext jwtSecret = authHandler jwtSecret :. EmptyContext
 
-genAuthServer :: Connection -> Server Api
-genAuthServer conn = const (projects conn)
+server :: Connection -> Server Api
+server conn = const (projects conn)
                 :<|> const (projectHours conn)
                 :<|> const (timeTrackingStatus conn)
+                :<|> health conn
 
 projectHours :: Connection -> Server ProjectHoursApi
 projectHours conn pid (Just start_date) (Just end_date) =
@@ -87,6 +92,9 @@ timeTrackingStatus conn (Just start) (Just end) =
   liftIO (DB.timeTrackingStatus conn (cs start) (cs end))
 timeTrackingStatus _ _ _ = throwError err400 { errBody = "missing `start_date` or `end_date` parameter" }
 
+health :: Connection -> Server HealthApi
+health = liftIO . DB.health
+
 myApi :: Proxy Api
 myApi = Proxy
 
@@ -100,4 +108,4 @@ app :: Text -> Connection -> Application
 app jwtSecret conn = cors corsPolicy $
   serveWithContext myApi
     (genAuthServerContext jwtSecret)
-    (genAuthServer conn)
+    (server conn)
