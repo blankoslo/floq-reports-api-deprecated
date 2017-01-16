@@ -8,16 +8,18 @@ else
   unset ENV;
 fi
 
+IMAGE_NAME="eu.gcr.io/marine-cycle-97212/floq-reports-api"
+
 if ! [ -z "$ENV" ]; then
   TAG="$ENV-$TRAVIS_COMMIT";
   docker login --username="$DOCKER_USER" --password="$DOCKER_PASS";
-  docker tag floq-reports "blankoslo/floq-reports:$TAG";
-  docker push "blankoslo/floq-reports:$TAG";
-  docker tag floq-reports "blankoslo/floq-reports:$ENV";
-  docker push "blankoslo/floq-reports:$ENV";
+  docker tag floq-reports-api "$IMAGE_NAME:$TAG";
+  gcloud docker -- push "$IMAGE_NAME:$TAG";
+  docker tag floq-reports-api "$IMAGE_NAME:$ENV";
+  gcloud docker -- push "$IMAGE_NAME:$ENV";
   export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/client-secret.json";
   "$HOME/google-cloud-sdk/bin/kubectl" \
-    set image deployment/floq-reports-blank-$ENV \
+    set image deployment/floq-reports-api \
     --namespace=floq-blank-$ENV \
-    "floq-reports-blank-$ENV=blankoslo/floq-reports:$TAG";
+    "floq-reports-api=$IMAGE_NAME:$TAG";
 fi
