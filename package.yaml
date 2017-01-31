@@ -49,3 +49,4 @@ executables:
       - floq-reports
       - optparse-applicative
       - warp
+      - wai-extra
