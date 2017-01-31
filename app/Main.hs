@@ -2,6 +2,7 @@ module Main where
 
 import Server (app)
 
+import Data.Monoid ((<>))
 import Control.Exception (bracket)
 import Data.String.Conversions (cs)
 import Database.PostgreSQL.Simple (connectPostgreSQL, close)
