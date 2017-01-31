@@ -2,10 +2,12 @@ module Main where
 
 import Server (app)
 
+import Data.Monoid ((<>))
 import Control.Exception (bracket)
 import Data.String.Conversions (cs)
 import Database.PostgreSQL.Simple (connectPostgreSQL, close)
 import Network.Wai.Handler.Warp (run)
+import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Options.Applicative
 
 data Config = Config { port :: Int
@@ -28,6 +30,6 @@ main = do
   let secret = (cs . jwtSecret) config'
 
   bracket
-    (connectPostgreSQL connectionString) -- acquire
-    close                                -- release
-    (run port' . app secret)             -- use
+    (connectPostgreSQL connectionString)    -- acquire
+    close                                   -- release
+    (run port' . logStdoutDev . app secret) -- use
