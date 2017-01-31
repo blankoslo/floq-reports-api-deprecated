@@ -3,7 +3,7 @@ FROM debian:jessie
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libpq5
 
 COPY dist/floq-reports /floq-reports
-COPY deplyment/urlencode /urlencode
+COPY deployment/urlencode /urlencode
 
 EXPOSE 3000
 
