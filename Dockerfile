@@ -1,6 +1,6 @@
-FROM debian:jessie
+FROM alpine:3.5
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libpq5
+RUN apk add --update libpq
 
 COPY dist/floq-reports /floq-reports
 COPY deployment/urlencode /urlencode
