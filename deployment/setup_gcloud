@@ -12,5 +12,5 @@ gcloud components install kubectl
 gcloud config set container/cluster floq
 gcloud config set compute/zone europe-west1-b
 gcloud config set project marine-cycle-97212
-gcloud container clusters get-credentials floq
+gcloud container clusters get-credentials eu-main
 
