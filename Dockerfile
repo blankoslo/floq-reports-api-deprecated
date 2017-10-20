@@ -1,6 +1,8 @@
-FROM alpine:3.5
+FROM debian:9
 
-RUN apk add --update libpq
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update && \
+    apt-get install -y -q libpq-dev
 
 COPY dist/floq-reports /floq-reports
 COPY deployment/urlencode /urlencode
