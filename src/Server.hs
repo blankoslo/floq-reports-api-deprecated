@@ -58,12 +58,18 @@ type TimeTrackingStatusApi = "time_tracking_status"
                           :> QueryParam "end_date" Text
                           :> Get '[ExcelCSV, JSON] TimeTrackingStatus
 
+type VisibilityApi = "visibility"
+                  :> QueryParam "start_date" Text
+                  :> QueryParam "end_date" Text
+                  :> Get '[ExcelCSV, JSON] [Visibility]
+
 type HealthApi = "health"
               :> Get '[JSON] Bool
 
 type Api = AuthProtect "jwt-auth" :> ProjectsApi
       :<|> AuthProtect "jwt-auth" :> ProjectHoursApi
       :<|> AuthProtect "jwt-auth" :> TimeTrackingStatusApi
+      :<|> AuthProtect "jwt-auth" :> VisibilityApi
       :<|> HealthApi
 
 type instance AuthServerData (AuthProtect "jwt-auth") = Jws
@@ -75,6 +81,7 @@ server :: Connection -> Server Api
 server conn = const (projects conn)
                 :<|> const (projectHours conn)
                 :<|> const (timeTrackingStatus conn)
+                :<|> const (visibility conn)
                 :<|> health conn
 
 projectHours :: Connection -> Server ProjectHoursApi
@@ -92,6 +99,10 @@ timeTrackingStatus conn (Just start) (Just end) =
   liftIO (DB.timeTrackingStatus conn (cs start) (cs end))
 timeTrackingStatus _ _ _ = throwError err400 { errBody = "missing `start_date` or `end_date` parameter" }
 
+visibility :: Connection -> Server VisibilityApi
+visibility conn (Just start) (Just end) = 
+  liftIO (DB.visibility conn (cs start) (cs end))
+visibility _ _ _ = throwError err400 { errBody = "missing `start_date` or `end_date` parameter" }
 health :: Connection -> Server HealthApi
 health = liftIO . DB.health
 

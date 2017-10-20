@@ -9,10 +9,17 @@ module Database
   , employeeHours
   , projectHours
   , timeTrackingStatus
+  , visibility
   , health
   ) where
 
-import Types (Project, EmployeeHours, ProjectHours(ProjectHours), TimeTrackingStatus(TimeTrackingStatus))
+import Types (
+  Project, 
+  EmployeeHours, 
+  ProjectHours(ProjectHours), 
+  TimeTrackingStatus(TimeTrackingStatus),
+  Visibility
+  )
 
 import Data.ByteString (ByteString)
 import Data.Text (Text)
@@ -78,6 +85,15 @@ timeTrackingStatus conn startDate endDate = do
   let Right start = parseDate startDate
   let Right end = parseDate endDate
   TimeTrackingStatus <$> query conn [sql| select * from time_tracking_status(?, ?) |] (start, end)
+
+visibility :: Connection -> ByteString -> ByteString -> IO [Visibility]
+visibility conn startDate endDate = do
+  let Right start = parseDate startDate
+  let Right end = parseDate endDate
+  query conn [sql| select year, week, available_hours :: float8, 
+    billable_hours :: float8, time_created :: Date, 
+    next_week_available_hours :: float8, next_week_billable_hours :: float8 
+    from reporting_visibility where time_created between ? and ?|] (start, end)
 
 health :: Connection -> IO Bool
 health conn = projects conn >> return True
