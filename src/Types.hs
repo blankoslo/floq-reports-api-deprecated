@@ -10,6 +10,7 @@ module Types
     Project(..),
     EmployeeHours(..),
     ProjectHours(..),
+    Visibility(..),
     EmployeeLoggedHours(..),
     TimeTrackingStatus(..),
     ExcelCSV
@@ -73,8 +74,8 @@ instance ToJSON ProjectHours
 data EmployeeLoggedHours = EmployeeLoggedHours {
     employee :: Text
   , email :: Text
-  , availableHours :: Double
-  , billableHours :: Double
+  , _availableHours :: Double
+  , _billableHours :: Double
   , nonBillableHours :: Double
   , unavailableHours :: Double
   , unregisteredDays :: Int
@@ -82,13 +83,26 @@ data EmployeeLoggedHours = EmployeeLoggedHours {
   , lastTimeEntryDate :: Maybe Date
   , lastTimeEntryCreated :: Maybe Date
   } deriving (Generic, Show)
-
 instance ToJSON EmployeeLoggedHours
 instance FromRow EmployeeLoggedHours
 
 instance ToField Date where
   toField (Finite day) = (cs . showGregorian) day
   toField _            = error "Cannot represent infinity"
+
+data Visibility = Visibility {
+    year :: Int
+  , week :: Int
+  , availableHours :: Double
+  , billableHours :: Double
+  , timeCreated :: Date
+  , nextWeekAvailableHours :: Double
+  , nextWeekBillableHours :: Double
+} deriving (Generic, Show)
+
+instance ToJSON Visibility
+instance FromRow Visibility
+instance ToRecord Visibility
 
 instance ToJSON Date where
   toJSON (Finite day) = toJSON day
@@ -135,6 +149,12 @@ instance MimeRender ExcelCSV TimeTrackingStatus where
   mimeRender proxy (TimeTrackingStatus hours') =
     let body = mimeRender proxy hours'
      in utf16LEByteOrderMark <> convert "UTF-8" "UTF-16LE" body
+
+instance MimeRender ExcelCSV Visibility where
+  mimeRender proxy visibility =
+    let body = mimeRender proxy visibility
+      in utf16LEByteOrderMark <> convert "UTF-8" "UTF-16LE" body
+
 
 -- A data type representing decimals that should use comma as a separator
 newtype EuDecimal = EuDecimal Double
